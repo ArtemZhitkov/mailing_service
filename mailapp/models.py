@@ -67,3 +67,22 @@ class Mailing(models.Model):
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
         ordering = ['-start_time']
+
+class MailingAttempt(models.Model):
+
+    SUCCESSFULLY = 'Успешно'
+    UNSUCCESSFULLY = 'Не успешно'
+
+    STATUS_CHOICES = (
+        (SUCCESSFULLY, 'Успешно'),
+        (UNSUCCESSFULLY, 'Не успешно'),
+    )
+
+    date_mailing = models.DateTimeField()
+    status = models.CharField(max_length=15, verbose_name='Статус попытки', choices=STATUS_CHOICES)
+    mail_server_response = models.TextField()
+    mailing = models.ForeignKey(Mailing, verbose_name='Рассылка', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Попытка отправки письма'
+        verbose_name_plural = 'Попытки отправки писем'

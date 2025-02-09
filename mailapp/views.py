@@ -6,31 +6,37 @@ from .models import MailMessage, Mailing, RecipientMail
 class RecipientMailListViews(ListView):
     model = RecipientMail
     template_name = 'mailapp/recipient_mail_list.html'
-    context_object_name = 'recipient_mails'
+    context_object_name = 'recipients'
     paginate_by = 10
     ordering = ['full_name']
 
 
-class RecipientMailDetailViews(RecipientMail):
+
+
+class RecipientMailDetailViews(DetailView):
     model = RecipientMail
     template_name = 'mailapp/recipient_mail_detail.html'
-    context_object_name = 'recipient_mail'
-    ordering = ['full_name']
+    context_object_name = 'recipient'
 
 
 
 class RecipientMailCreateViews(CreateView):
     model = RecipientMail
-    template_name = 'recipient_mail_form.html'
+    template_name = 'mailapp/recipient_mail_form.html'
     fields = ['email', 'full_name', 'comment']
-    success_url = reverse_lazy('mailapp:recipient_mail_list')
+    success_url = reverse_lazy('mailapp:recipient_list')
 
 
 class RecipientMailUpdateViews(UpdateView):
     model = RecipientMail
-    template_name = 'recipient_mail_form.html'
+    template_name = 'mailapp/recipient_mail_form.html'
     fields = ['email', 'full_name', 'comment']
-    success_url = reverse_lazy('mailapp:recipient_mail_list')
+    success_url = reverse_lazy('mailapp:recipient_detail')
+
+    def get_success_url(self):
+        recipient = self.object
+        return reverse_lazy('mailapp:recipient_detail', kwargs={'pk': recipient.pk})
+
 
 
 class RecipientMailDeleteViews(DeleteView):

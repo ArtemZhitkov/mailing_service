@@ -1,0 +1,46 @@
+{% extends 'mailapp/base.html' %}
+
+{% block title %}Список рассылок{% endblock %}
+
+{% block content %}
+<h1>Список рассылок</h1>
+<p>В этом списке находятся все рассылки, которые были созданы вами.</p>
+
+{% if mailing_lists %}
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Дата и время первой отправки</th>
+            <th scope="col">Дата и время последней отправки</th>
+            <th scope="col">Статус рассылки</th>
+            <th scope="col">Сообщение</th>
+            <th scope="col">Частота рассылки</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        {% for mailing_list in mailing_lists %}
+          <tr>
+            <th scope="row">{{ mailing_list.pk }}</th>
+            <td>{{ mailing_list.start_time }}</td>
+            <td>{{ mailing_list.end_time }}</td>
+            <td>{{ mailing_list.status }}</td>
+            <td>{{ mailing_list.message }}</td>
+            <td>{{ mailing_list.frequency }}</td>
+            <td><a href="{% url 'mailapp:mailing_list_detail' mailing_list.pk %}">Подробнее</a></td>
+          </tr>
+        {% endfor %}
+
+        </tbody>
+      </table>
+
+{% else %}
+    <p>Ваш список рассылок пуст.</p>
+{% endif %}
+
+<a href="{% url 'mailapp:mailing_list_create' %}" class="btn btn-outline-primary">Создать рассылку</a>
+
+{% endblock %}

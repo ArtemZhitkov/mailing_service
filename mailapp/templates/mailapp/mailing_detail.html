@@ -1,0 +1,24 @@
+{% extends 'mailapp/base.html' %}
+
+{% block title %}Информация о рассылке{% endblock %}
+
+{% block content %}
+<h1>Информация о рассылке</h1>
+
+<div class="card">
+    <div class="card-body">
+        <p class="card-text">Дата и время первой отправки: {{ mailing.start_time }}</p>
+        <p class="card-text">Дата и время последней отправки: {{ mailing.last_attempt_time }}</p>
+        <p class="card-text">Статус рассылки: {{ mailing.status }}</p>
+        <p class="card-text">Сообщение: {{ mailing.message }}</p>
+        <p class="card-text">Частота рассылки: {{ mailing.frequency }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-success">Run mailing</button>
+        </form>
+        <a href="{% url 'mailapp:mailing_list' %}" class="btn btn-primary">К списку рассылок</a>
+        <a href="{% url 'mailapp:mailing_update' mailing.pk %}" class="btn btn-warning">Изменить данные</a>
+        <a href="{% url 'mailapp:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить рассылку</a>
+    </div>
+</div>
+{% endblock %}

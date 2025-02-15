@@ -19,7 +19,7 @@
         <tr>
             <th scope="row">{{ forloop.counter }}</th>
             <td>{{ message.subject }}</td>
-            <td>{{ message.body }}</td>
+            <td>{{ message.body|truncatechars:50 }}</td>
             <td><a href="{% url 'mailapp:mail_message_detail' message.pk %}">Подробнее</a></td>
         </tr>
     {% endfor %}

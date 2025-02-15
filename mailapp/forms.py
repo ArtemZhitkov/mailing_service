@@ -1,0 +1,28 @@
+from django import forms
+from email_validator import validate_email, EmailNotValidError
+from .models import RecipientMail
+
+
+class StyleFormMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field, forms.BooleanField):
+                field.widget.attrs.update({"class": "form-check-input"})
+            else:
+                field.widget.attrs.update({"class": "form-control"})
+
+
+
+class RecipientForm(StyleFormMixin, forms.ModelForm):
+    class Meta:
+        model = RecipientMail
+        fields = ['email', 'full_name', 'comment']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        try:
+            validate_email(email)
+        except EmailNotValidError as e:
+            raise forms.ValidationError(str(e))
+        return email

@@ -34,10 +34,10 @@ class Mailing(models.Model):
     CREATED = 'Создана'
     STARTED = 'Запущена'
     FINISHED = 'Завершена'
-    MINUTLY = 'minutly'
-    DAILY = 'daily',
-    WEEKLY = 'weekly',
-    MONTHLY = 'monthly',
+    MINUTLY = 'раз в минуту'
+    DAILY = 'раз в день',
+    WEEKLY = 'раз в неделю',
+    MONTHLY = 'раз в месяц',
 
     STATUS_CHOICES = (
         (CREATED, 'Создана'),
@@ -66,7 +66,6 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
-        ordering = ['-start_time']
 
 class MailingAttempt(models.Model):
 
@@ -78,9 +77,9 @@ class MailingAttempt(models.Model):
         (UNSUCCESSFULLY, 'Не успешно'),
     )
 
-    date_mailing = models.DateTimeField()
+    date_mailing = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=15, verbose_name='Статус попытки', choices=STATUS_CHOICES)
-    mail_server_response = models.TextField()
+    mail_server_response = models.TextField(blank=True, null=True)
     mailing = models.ForeignKey(Mailing, verbose_name='Рассылка', on_delete=models.CASCADE)
 
     class Meta:

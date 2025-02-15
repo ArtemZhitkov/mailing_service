@@ -6,7 +6,7 @@
 <h1>Список рассылок</h1>
 <p>В этом списке находятся все рассылки, которые были созданы вами.</p>
 
-{% if mailing_lists %}
+{% if mailings %}
 
     <table class="table">
         <thead>
@@ -22,15 +22,15 @@
 
         <tbody>
 
-        {% for mailing_list in mailing_lists %}
+        {% for mailing in mailings %}
           <tr>
-            <th scope="row">{{ mailing_list.pk }}</th>
-            <td>{{ mailing_list.start_time }}</td>
-            <td>{{ mailing_list.end_time }}</td>
-            <td>{{ mailing_list.status }}</td>
-            <td>{{ mailing_list.message }}</td>
-            <td>{{ mailing_list.frequency }}</td>
-            <td><a href="{% url 'mailapp:mailing_list_detail' mailing_list.pk %}">Подробнее</a></td>
+            <th scope="row">{{ mailing.pk }}</th>
+            <td>{{ mailing.start_time }}</td>
+            <td>{{ mailing.end_time }}</td>
+            <td>{{ mailing.status }}</td>
+            <td>{{ mailing.message|truncatechars:100 }}</td>
+            <td>{{ mailing.frequency }}</td>
+            <td><a href="{% url 'mailapp:mailing_detail' mailing.pk %}">Подробнее</a></td>
           </tr>
         {% endfor %}
 
@@ -41,6 +41,6 @@
     <p>Ваш список рассылок пуст.</p>
 {% endif %}
 
-<a href="{% url 'mailapp:mailing_list_create' %}" class="btn btn-outline-primary">Создать рассылку</a>
+<a href="{% url 'mailapp:create_mailing' %}" class="btn btn-outline-primary">Создать рассылку</a>
 
 {% endblock %}

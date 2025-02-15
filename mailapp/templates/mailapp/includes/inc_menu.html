@@ -10,10 +10,16 @@
                         <a class="nav-link active" aria-current="page" href="{% url 'mailapp:recipient_list' %}">Получатели</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Рассылки</a>
+                        <a class="nav-link" href="{% url 'mailapp:mailing_list' %}">Рассылки</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'mailapp:mail_message_list' %}">Сообщения</a>
                     </li>
                 </ul>
             </div>
             <div class="ms-auto">
+                <a class="btn btn-outline-success" href="{% url 'mailapp:create_message' %}">Создать сообщение</a>
+                <a class="btn btn-outline-success" href="{% url 'mailapp:create_mailing' %}">Создать рассылку</a>
                 <a class="btn btn-outline-success" href="{% url 'mailapp:recipient_create' %}">Добавить получателя</a>
+                <a class="btn btn-outline-primary" href="#">Выйти</a>
             </div>

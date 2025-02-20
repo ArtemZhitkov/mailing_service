@@ -1,6 +1,7 @@
 from django import forms
 from email_validator import validate_email, EmailNotValidError
-from .models import RecipientMail
+from .models import RecipientMail, Mailing, MailMessage
+
 
 
 class StyleFormMixin:
@@ -11,7 +12,6 @@ class StyleFormMixin:
                 field.widget.attrs.update({"class": "form-check-input"})
             else:
                 field.widget.attrs.update({"class": "form-control"})
-
 
 
 class RecipientForm(StyleFormMixin, forms.ModelForm):
@@ -26,3 +26,21 @@ class RecipientForm(StyleFormMixin, forms.ModelForm):
         except EmailNotValidError as e:
             raise forms.ValidationError(str(e))
         return email
+
+
+class MailingForm(StyleFormMixin, forms.ModelForm):
+    class Meta:
+        model = Mailing
+        fields = ['message', 'recipients', 'frequency']
+
+    def clean_recipients(self):
+        recipients = self.cleaned_data.get('recipients')
+        if not recipients:
+            raise forms.ValidationError('Вы должны указать получателей.')
+        return recipients
+
+
+class MailMessageForm(StyleFormMixin, forms.ModelForm):
+    class Meta:
+        model = MailMessage
+        fields = ['subject', 'body']

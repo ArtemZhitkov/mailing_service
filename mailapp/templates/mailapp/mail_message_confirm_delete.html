@@ -10,6 +10,6 @@
 <form method="post">
     {% csrf_token %}
     <button type="submit" class="btn btn-outline-danger">Удалить</button>
-    <a href="{% url 'mailapp:message_detail' message.pk %} " class="btn btn-outline-secondary">Отмена</a>
+    <a href="{% url 'mailapp:mail_message_detail' message.pk %} " class="btn btn-outline-secondary">Отмена</a>
 </form>
 {% endblock %}

@@ -28,7 +28,7 @@
 {% else %}
     <p>Ваш список сообщений пуст.</p>
 {% endif %}
-
+<a href="{% url 'mailapp:create_message' %}" class="btn btn-outline-primary">Создать сообщение</a>
 <center>
     {% if page_obj.has_previous %}
     <a href="?page={{ page_obj.previous_page_number }}">Предыдущая страница</a>

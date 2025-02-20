@@ -9,28 +9,40 @@
 {% if attempts %}
 <table class="table table-striped">
     <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Дата и время попытки</th>
-            <th scope="col">Ответ почтового сервера</th>
-            <th scope="col">Статус попытки</th>
-            <th scope="col">Рассылка</th>
-        </tr>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Дата и время попытки</th>
+        <th scope="col">Ответ почтового сервера</th>
+        <th scope="col">Статус попытки</th>
+        <th scope="col">Рассылка</th>
+    </tr>
     </thead>
     <tbody>
     {% for attempt in attempts %}
-        <tr>
-            <th scope="row">{{ forloop.counter }}</th>
-            <td>{{ attempt.date_mailing }}</td>
-            <td>{{ attempt.response_code }}</td>
-            <td>{{ attempt.status }}</td>
-            <td>{{ attempt.mailing }}</td>
-        </tr>
+    <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{ attempt.date_mailing }}</td>
+        <td>{{ attempt.mail_server_response }}</td>
+        <td>{{ attempt.status }}</td>
+        <td>{{ attempt.mailing }}</td>
+    </tr>
     {% endfor %}
     </tbody>
-    </table>
+</table>
 {% else %}
-    <p>Ваш список попыток отправок пуст.</p>
+<p>Ваш список попыток отправок пуст.</p>
 {% endif %}
+<center>
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">Предыдущая страница</a>
+    {% endif %}
+    &nbsp; &nbsp;
+    Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+    &nbsp; &nbsp;
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">Следующая страница</a>
+    {% endif %}
+</center>
+
 
 {% endblock %}

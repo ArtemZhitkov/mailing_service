@@ -1,12 +1,25 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect, get_object_or_404
 from .models import MailMessage, Mailing, RecipientMail, MailingAttempt
-from .forms import RecipientForm
+from .forms import RecipientForm, MailingForm, MailMessageForm
 from .services import MailingService
 
+class IndexTemplateView(TemplateView):
+    template_name = 'mailapp/index.html'
+    context_object_name = 'index'
 
-class RecipientMailListViews(ListView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['count_mailing'] = Mailing.objects.all().count()
+        context['count_active_mailing'] = Mailing.objects.filter(status='Запущена').count()
+        context['count_unique_recipients'] = RecipientMail.objects.all().count()
+        return context
+
+
+
+class RecipientMailListViews(LoginRequiredMixin, ListView):
     model = RecipientMail
     template_name = 'mailapp/recipient_mail_list.html'
     context_object_name = 'recipients'
@@ -14,20 +27,20 @@ class RecipientMailListViews(ListView):
     ordering = ['full_name']
 
 
-class RecipientMailDetailViews(DetailView):
+class RecipientMailDetailViews(LoginRequiredMixin, DetailView):
     model = RecipientMail
     template_name = 'mailapp/recipient_mail_detail.html'
     context_object_name = 'recipient'
 
 
-class RecipientMailCreateViews(CreateView):
+class RecipientMailCreateViews(LoginRequiredMixin, CreateView):
     model = RecipientMail
     form_class = RecipientForm
     template_name = 'mailapp/recipient_mail_form.html'
     success_url = reverse_lazy('mailapp:recipient_list')
 
 
-class RecipientMailUpdateViews(UpdateView):
+class RecipientMailUpdateViews(LoginRequiredMixin, UpdateView):
     model = RecipientMail
     template_name = 'mailapp/recipient_mail_form.html'
     fields = ['email', 'full_name', 'comment']
@@ -38,31 +51,31 @@ class RecipientMailUpdateViews(UpdateView):
         return reverse_lazy('mailapp:recipient_detail', kwargs={'pk': recipient.pk})
 
 
-class RecipientMailDeleteViews(DeleteView):
+class RecipientMailDeleteViews(LoginRequiredMixin, DeleteView):
     model = RecipientMail
     context_object_name = 'recipient'
     template_name = 'mailapp/recipient_mail_confirm_delete.html'
     success_url = reverse_lazy('mailapp:recipient_list')
 
 
-class MailMessageListView(ListView):
+class MailMessageListView(LoginRequiredMixin, ListView):
     model = MailMessage
     template_name = 'mailapp/mail_message_list.html'
     context_object_name = 'messages'
     paginate_by = 10
 
 
-class MailMessageCreateView(CreateView):
+class MailMessageCreateView(LoginRequiredMixin, CreateView):
     model = MailMessage
     template_name = 'mailapp/mail_message_form.html'
-    fields = ['subject', 'body']
+    form_class = MailMessageForm
     success_url = reverse_lazy('mailapp:mail_message_list')
 
 
-class MailMessageUpdateView(UpdateView):
+class MailMessageUpdateView(LoginRequiredMixin, UpdateView):
     model = MailMessage
     template_name = 'mailapp/mail_message_form.html'
-    fields = ['subject', 'body']
+    form_class = MailMessageForm
     success_url = reverse_lazy('mailapp:mail_message_detail')
 
     def get_success_url(self):
@@ -70,26 +83,33 @@ class MailMessageUpdateView(UpdateView):
         return reverse_lazy('mailapp:mail_message_detail', kwargs={'pk': message.pk})
 
 
-class MailMessageDetailView(DetailView):
+class MailMessageDetailView(LoginRequiredMixin, DetailView):
     model = MailMessage
     template_name = 'mailapp/mail_message_detail.html'
     context_object_name = 'message'
 
 
-class MailMessageDeleteView(DeleteView):
+class MailMessageDeleteView(LoginRequiredMixin, DeleteView):
     model = MailMessage
-    template_name = 'mail_message_confirm_delete.html'
+    template_name = 'mailapp/mail_message_confirm_delete.html'
+    context_object_name = 'message'
     success_url = reverse_lazy('mailapp:mail_message_list')
 
 
-class MailingCreateView(CreateView):
+class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
     template_name = 'mailapp/mailing_form.html'
-    fields = ['message', 'recipients', 'frequency']
+    form_class = MailingForm
     success_url = reverse_lazy('mailapp:mailing_list')
 
+    def form_valid(self, form):
+        mailing = form.save(commit=False)
+        mailing.owner = self.request.user
+        mailing.save()
+        return redirect(reverse('mailapp:mailing_list'))
 
-class MailingDetailView(DetailView):
+
+class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
     template_name = 'mailapp/mailing_detail.html'
     context_object_name = 'mailing'
@@ -99,12 +119,17 @@ class MailingDetailView(DetailView):
         MailingService.start_mailing(mailing)
         return redirect(reverse('mailapp:mailing_attempts'))
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['recipients'] = RecipientMail.objects.filter(mailing=self.object)
+        return context
 
 
-class MailingUpdateView(UpdateView):
+
+class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
     template_name = 'mailapp/mailing_form.html'
-    fields = ['message', 'recipients']
+    form_class = MailingForm
     success_url = reverse_lazy('mailapp:mailing_detail')
 
     def get_success_url(self):
@@ -112,21 +137,21 @@ class MailingUpdateView(UpdateView):
         return reverse_lazy('mailapp:mailing_detail', kwargs={'pk': mailing.pk})
 
 
-class MailingListView(ListView):
+class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = 'mailapp/mailing_list.html'
     context_object_name = 'mailings'
     paginate_by = 10
 
 
-class MailingDeleteView(DeleteView):
+class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     context_object_name = 'mailing'
     template_name = 'mailapp/mailing_confirm_delete.html'
     success_url = reverse_lazy('mailapp:mailing_list')
 
 
-class MailingAttemptListView(ListView):
+class MailingAttemptListView(LoginRequiredMixin, ListView):
     model = MailingAttempt
     template_name = 'mailapp/mailing_attempt_list.html'
     context_object_name = 'attempts'

@@ -128,6 +128,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
+LOGIN_REDIRECT_URL = 'mailapp:mailing_list'
+LOGIN_URL = 'users:login'
 
 
 # Email settings

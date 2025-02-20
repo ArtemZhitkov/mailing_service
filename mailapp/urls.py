@@ -5,7 +5,8 @@ from mailapp.apps import MailappConfig
 app_name = MailappConfig.name
 
 urlpatterns = [
-    path('', views.RecipientMailListViews.as_view(), name='recipient_list'),
+    path('', views.IndexTemplateView.as_view(), name='index'),
+    path('recipient/', views.RecipientMailListViews.as_view(), name='recipient_list'),
     path('recipient/create/', views.RecipientMailCreateViews.as_view(), name='recipient_create'),
     path('recipient/detail/<int:pk>/', views.RecipientMailDetailViews.as_view(), name='recipient_detail'),
     path('recipient/update/<int:pk>/', views.RecipientMailUpdateViews.as_view(), name='recipient_update'),

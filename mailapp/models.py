@@ -1,5 +1,7 @@
 from django.db import models
 
+from users.models import User
+
 
 class RecipientMail(models.Model):
     email = models.EmailField(max_length=100, unique=True, verbose_name='Email')
@@ -53,12 +55,12 @@ class Mailing(models.Model):
     )
 
     start_time = models.DateTimeField(verbose_name='Дата и время первой отправки', blank=True, null=True)
-    end_time = models.DateTimeField(verbose_name='Дата и время последней отправки', blank=True, null=True)
+    end_time = models.DateTimeField(auto_now=True, verbose_name='Дата и время последней отправки', blank=True, null=True)
     status = models.CharField(max_length=15, verbose_name='Статус рассылки', default=CREATED, choices=STATUS_CHOICES)
     message = models.ForeignKey(MailMessage, verbose_name='Сообщение', on_delete=models.CASCADE, blank=True, null=True)
     recipients = models.ManyToManyField(RecipientMail, verbose_name='Получатели писем')
     frequency = models.CharField(verbose_name='Частота рассылки', max_length=20, choices=FREQUENCY_CHOICES)
-
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Владелец рассылки", null=True, blank=True)
 
     def __str__(self):
         return f'{self.message} - {self.status}'

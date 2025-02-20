@@ -42,5 +42,15 @@
 {% endif %}
 
 <a href="{% url 'mailapp:create_mailing' %}" class="btn btn-outline-primary">Создать рассылку</a>
-
+<center>
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">Предыдущая страница</a>
+    {% endif %}
+    &nbsp; &nbsp;
+    Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+    &nbsp; &nbsp;
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">Следующая страница</a>
+    {% endif %}
+    </center>
 {% endblock %}

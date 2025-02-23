@@ -26,6 +26,12 @@ class RecipientMailListViews(LoginRequiredMixin, ListView):
     paginate_by = 10
     ordering = ['full_name']
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.has_perm('can_view_recipient_mail'):
+            return RecipientMail.objects.all()
+        return RecipientMail.objects.filter(owner=user)
+
 
 class RecipientMailDetailViews(LoginRequiredMixin, DetailView):
     model = RecipientMail
@@ -64,12 +70,25 @@ class MailMessageListView(LoginRequiredMixin, ListView):
     context_object_name = 'messages'
     paginate_by = 10
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.has_perm('can_view_mail_message'):
+            return MailMessage.objects.all()
+        return MailMessage.objects.filter(owner=user)
+
+
 
 class MailMessageCreateView(LoginRequiredMixin, CreateView):
     model = MailMessage
     template_name = 'mailapp/mail_message_form.html'
     form_class = MailMessageForm
     success_url = reverse_lazy('mailapp:mail_message_list')
+
+    def form_valid(self, form):
+        message = form.save(commit=False)
+        message.owner = self.request.user
+        message.save()
+        return redirect(reverse('mailapp:mail_message_list'))
 
 
 class MailMessageUpdateView(LoginRequiredMixin, UpdateView):
@@ -108,6 +127,10 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         mailing.save()
         return redirect(reverse('mailapp:mailing_list'))
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
@@ -143,6 +166,12 @@ class MailingListView(LoginRequiredMixin, ListView):
     context_object_name = 'mailings'
     paginate_by = 10
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.has_perm('can_view_mailing'):
+            return Mailing.objects.all()
+        return queryset.filter(owner=self.request.user)
+
 
 class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
@@ -156,3 +185,5 @@ class MailingAttemptListView(LoginRequiredMixin, ListView):
     template_name = 'mailapp/mailing_attempt_list.html'
     context_object_name = 'attempts'
     paginate_by = 10
+    ordering = ['-date_mailing']
+

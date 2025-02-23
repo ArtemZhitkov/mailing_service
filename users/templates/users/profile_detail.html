@@ -16,10 +16,6 @@
                 <h6>Email: {{ user.email }}</h6>
                 <p>Дата регистрации: {{ user.date_joined }}</p>
                 <a href="{% url 'users:edit_profile' user.pk %}" class="btn btn-primary mt-3">Изменить профиль</a>
-                <form method="post" action="{% url 'users:logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger mt-3">Выйти</button>
-                </form>
             </div>
         </div>
     </div>

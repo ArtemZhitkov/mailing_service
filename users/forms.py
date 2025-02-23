@@ -3,19 +3,22 @@ from email_validator import validate_email, EmailNotValidError
 from django.contrib.auth.forms import UserCreationForm
 from .models import User
 
-class UserRegisterForm(UserCreationForm):
+class StyleFormMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field, forms.EmailField):
+                field.widget.attrs.update({"class": "form-control", "type": "email"})
+            elif isinstance(field, forms.ImageField):
+                field.widget.attrs.update({"class": "form-control", "type": "file"})
+            else:
+                field.widget.attrs.update({"class": "form-control"})
+
+class UserRegisterForm(StyleFormMixin, UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'avatar', 'phone_number', 'area', 'password1', 'password2')
 
-    def __init__(self, *args, **kwargs):
-        super(UserRegisterForm, self).__init__()
-        self.fields['email'].widget.attrs.update({'class': 'form-control'})
-        self.fields['avatar'].widget.attrs.update({'class': 'form-control-file'})
-        self.fields['phone_number'].widget.attrs.update({'class': 'form-control'})
-        self.fields['area'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -31,7 +34,7 @@ class UserRegisterForm(UserCreationForm):
             raise forms.ValidationError('Номер телефона должен содержать только цифры.')
         return phone_number
 
-class PasswordResetForm(UserCreationForm):
+class PasswordResetForm(StyleFormMixin, UserCreationForm):
     class Meta:
         model = User
         fields = ['password1', 'password2']
@@ -39,7 +42,3 @@ class PasswordResetForm(UserCreationForm):
             'password1': 'Новый пароль',
             'password2': 'Подтверждение нового пароля',
         }
-    def __init__(self, *args, **kwargs):
-        super(PasswordResetForm, self).__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password2'].widget.attrs.update({'class': 'form-control'})

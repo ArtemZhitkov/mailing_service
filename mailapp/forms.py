@@ -33,6 +33,14 @@ class MailingForm(StyleFormMixin, forms.ModelForm):
         model = Mailing
         fields = ['message', 'recipients', 'frequency']
 
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['recipients'].queryset = RecipientMail.objects.filter(owner=user)
+            self.fields['message'].queryset = MailMessage.objects.filter(owner=user)
+
+
     def clean_recipients(self):
         recipients = self.cleaned_data.get('recipients')
         if not recipients:

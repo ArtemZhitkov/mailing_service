@@ -7,6 +7,7 @@ class RecipientMail(models.Model):
     email = models.EmailField(max_length=100, unique=True, verbose_name='Email')
     full_name = models.CharField(max_length=100, verbose_name='Ф.И.О.')
     comment = models.TextField(verbose_name='Комментарий', blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Владелец", null=True, blank=True)
 
 
     def __str__(self):
@@ -16,11 +17,15 @@ class RecipientMail(models.Model):
         verbose_name = 'Получатель письма'
         verbose_name_plural = 'Получатели писем'
         ordering = ['full_name']
+        permissions = [
+            ('can_view_recipient_mail', 'Can view recipient mail'),
+        ]
 
 
 class MailMessage(models.Model):
     subject = models.CharField(max_length=200, verbose_name='Тема письма')
     body = models.TextField(verbose_name='Тело письма')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Владелец", null=True, blank=True)
 
 
     def __str__(self):
@@ -55,7 +60,7 @@ class Mailing(models.Model):
     )
 
     start_time = models.DateTimeField(verbose_name='Дата и время первой отправки', blank=True, null=True)
-    end_time = models.DateTimeField(auto_now=True, verbose_name='Дата и время последней отправки', blank=True, null=True)
+    end_time = models.DateTimeField(verbose_name='Дата и время последней отправки', blank=True, null=True)
     status = models.CharField(max_length=15, verbose_name='Статус рассылки', default=CREATED, choices=STATUS_CHOICES)
     message = models.ForeignKey(MailMessage, verbose_name='Сообщение', on_delete=models.CASCADE, blank=True, null=True)
     recipients = models.ManyToManyField(RecipientMail, verbose_name='Получатели писем')
@@ -68,6 +73,10 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
+        permissions = [
+            ('can_view_mailing', 'Can view mailing'),
+            ('can_disabling_mailing', 'Can disabling mailing')
+        ]
 
 class MailingAttempt(models.Model):
 
@@ -83,7 +92,9 @@ class MailingAttempt(models.Model):
     status = models.CharField(max_length=15, verbose_name='Статус попытки', choices=STATUS_CHOICES)
     mail_server_response = models.TextField(blank=True, null=True)
     mailing = models.ForeignKey(Mailing, verbose_name='Рассылка', on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Владелец", null=True, blank=True)
 
     class Meta:
         verbose_name = 'Попытка отправки письма'
         verbose_name_plural = 'Попытки отправки писем'
+

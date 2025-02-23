@@ -128,7 +128,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
-LOGIN_REDIRECT_URL = 'mailapp:mailing_list'
+LOGIN_REDIRECT_URL = 'mailapp:index'
 LOGIN_URL = 'users:login'
 
 
@@ -138,16 +138,16 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_USE_SSL = True if os.getenv('EMAIL_USE_SSL') else False
-EMAIL_USE_TLS = False if os.getenv('EMAIL_USE_TLS') else True
+EMAIL_USE_SSL = False if os.getenv('EMAIL_USE_SSL') else True
+EMAIL_USE_TLS = True if os.getenv('EMAIL_USE_TLS') else False
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 # Redis setting
-CACHE_ENABLED = os.getenv('CACHE_ENABLED')
-if CACHE_ENABLED:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': os.getenv('LOCATION'),
-        }
-    }
+# CACHE_ENABLED = os.getenv('CACHE_ENABLED')
+# if CACHE_ENABLED:
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#             'LOCATION': os.getenv('LOCATION'),
+#         }
+#     }

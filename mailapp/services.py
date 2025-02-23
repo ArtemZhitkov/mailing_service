@@ -11,7 +11,7 @@ class MailingService:
     def start_mailing(mailing):
         if mailing.start_time is None:
             mailing.start_time = timezone.now()
-        mailing.status = "Запущена"
+        mailing.end_time = timezone.now()
         mailing.save()
 
         subject = mailing.message.subject
@@ -25,9 +25,11 @@ class MailingService:
                     subject,
                     message,
                     EMAIL_HOST_USER,
-                    [recipient],
+                    [recipient,],
                     fail_silently=False
                 )
+                mailing.status = 'Запущена'
+                mailing.save()
 
                 # Создаем запись попытки отправки
                 mailing_attempt = MailingAttempt.objects.create(

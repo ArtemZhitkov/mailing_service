@@ -3,18 +3,9 @@
 {% block title %}Главная страница{% endblock %}
 
 {% block content %}
-
+{% if user.is_authenticated %}
 <h1>Главная страница</h1>
     <p>Добро пожаловать в приложение для создания и рассылки электронных писем.</p>
-    {% if user.is_authenticated %}
-    <div>
-        <a href="{% url 'mailapp:create_mailing' %}" class="btn btn-primary">Создать рассылку</a>
-        <a href="{% url 'mailapp:create_message' %}" class="btn btn-secondary">Создать сообщение</a>
-        <a href="{% url 'mailapp:recipient_create' %}" class="btn btn-secondary">Добавить получателя</a>
-        <a href="{% url 'mailapp:mail_message_list' %}" class="btn btn-secondary">Список сообщений</a>
-        <a href="{% url 'mailapp:mailing_attempts' %}" class="btn btn-secondary">Попытки отправки</a>
-    </div>
-    {% endif %}
     <h2>Статистика</h2>
     <table class="table">
         <thead>
@@ -28,10 +19,16 @@
         <tbody>
             <tr>
                 <th scope="row"></th>
-                <td><a href="{% url 'mailapp:mailing_list' %}">{{ count_mailing }}</a></td>
+                <td>{{ count_mailing }}</td>
                 <td>{{ count_active_mailing }}</td>
                 <td>{{ count_unique_recipients }}</td>
             </tr>
         </tbody>
     </table>
+{% else %}
+<h1>Добро пожаловать в приложение для создания и рассылки электронных писем!</h1>
+<p>Чтобы начать использовать приложение, войдите в систему с помощью своего аккаунта.</p>
+<a class="btn btn-primary" href="{% url 'users:login' %}">Войти</a>
+<p>Еще не зарегистрированы? <a href="{% url 'users:register' %}">Регистрация</a></p>
+{% endif %}
 {% endblock %}

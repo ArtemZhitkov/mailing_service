@@ -56,3 +56,8 @@ class MailingService:
                     mailing=mailing
                 )
                 mailing_attempt.save()
+
+    @staticmethod
+    def stop_mailing(mailing):
+        mailing.status = 'Завершена'
+        mailing.save()

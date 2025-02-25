@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect, get_object_or_404
@@ -8,15 +8,19 @@ from .services import MailingService
 
 class IndexTemplateView(TemplateView):
     template_name = 'mailapp/index.html'
-    context_object_name = 'index'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['count_mailing'] = Mailing.objects.all().count()
-        context['count_active_mailing'] = Mailing.objects.filter(status='Запущена').count()
-        context['count_unique_recipients'] = RecipientMail.objects.all().count()
-        return context
-
+        if self.request.user.has_perm('mailapp.can_view_mailing'):
+            context['count_mailing'] = Mailing.objects.all().count()
+            context['count_active_mailing'] = Mailing.objects.filter(status='Запущена').count()
+            context['count_unique_recipients'] = RecipientMail.objects.distinct().count()
+            return context
+        else:
+            context['count_mailing'] = Mailing.objects.filter(owner=self.request.user).count()
+            context['count_active_mailing'] = Mailing.objects.filter(status='Запущена', owner=self.request.user).count()
+            context['count_unique_recipients'] = RecipientMail.objects.filter(owner=self.request.user).distinct().count()
+            return context
 
 
 class RecipientMailListViews(LoginRequiredMixin, ListView):
@@ -28,7 +32,7 @@ class RecipientMailListViews(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.has_perm('can_view_recipient_mail'):
+        if user.has_perm('mailapp.can_view_recipient_mail'):
             return RecipientMail.objects.all()
         return RecipientMail.objects.filter(owner=user)
 
@@ -44,6 +48,12 @@ class RecipientMailCreateViews(LoginRequiredMixin, CreateView):
     form_class = RecipientForm
     template_name = 'mailapp/recipient_mail_form.html'
     success_url = reverse_lazy('mailapp:recipient_list')
+
+    def form_valid(self, form):
+        recipient = form.save(commit=False)
+        recipient.owner = self.request.user
+        recipient.save()
+        return redirect(reverse('mailapp:recipient_detail', kwargs={'pk': recipient.pk}))
 
 
 class RecipientMailUpdateViews(LoginRequiredMixin, UpdateView):
@@ -72,7 +82,7 @@ class MailMessageListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.has_perm('can_view_mail_message'):
+        if user.has_perm('mailapp.can_view_mail_message'):
             return MailMessage.objects.all()
         return MailMessage.objects.filter(owner=user)
 
@@ -139,8 +149,14 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         mailing = get_object_or_404(Mailing, pk=kwargs.get('pk'))
-        MailingService.start_mailing(mailing)
-        return redirect(reverse('mailapp:mailing_attempts'))
+        if mailing.status == 'Создана':
+            MailingService.start_mailing(mailing)
+            return redirect(reverse('mailapp:mailing_attempts'))
+        elif mailing.status == 'Запущена':
+            if self.request.user.has_perm('mailapp.can_disabling_mailing') or self.request.user == mailing.owner:
+                MailingService.stop_mailing(mailing)
+                return redirect(reverse('mailapp:mailing_list'))
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -159,6 +175,11 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
         mailing = self.object
         return reverse_lazy('mailapp:mailing_detail', kwargs={'pk': mailing.pk})
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
 
 class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
@@ -168,7 +189,7 @@ class MailingListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if self.request.user.has_perm('can_view_mailing'):
+        if self.request.user.has_perm('mailapp.can_view_mailing'):
             return Mailing.objects.all()
         return queryset.filter(owner=self.request.user)
 
@@ -187,3 +208,17 @@ class MailingAttemptListView(LoginRequiredMixin, ListView):
     paginate_by = 10
     ordering = ['-date_mailing']
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(mailing__owner=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.has_perm('mailapp.can_view_mailing_attempt'):
+            context['total_sent_messages'] = MailingAttempt.objects.filter(status='Успешно').count()
+            context['total_failed_messages'] = MailingAttempt.objects.filter(status='Не успешно').count()
+            return context
+        else:
+            context['total_sent_messages'] = MailingAttempt.objects.filter(status='Успешно', mailing__owner=self.request.user).count()
+            context['total_failed_messages'] = MailingAttempt.objects.filter(status='Не успешно', mailing__owner=self.request.user).count()
+            return context

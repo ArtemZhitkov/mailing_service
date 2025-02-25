@@ -5,7 +5,7 @@ from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import DetailView
 from .models import User
-from .forms import UserRegisterForm, PasswordResetForm
+from .forms import UserRegisterForm, UserEditForm, UserManagerEditForm
 from .services import UserService
 
 class UsersListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
@@ -13,6 +13,9 @@ class UsersListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     template_name = 'users/user_list.html'
     permission_required = 'users.can_view_user_list'
     context_object_name = 'users'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(is_staff=False)
 
 
 class UserCreateView(CreateView):
@@ -36,7 +39,7 @@ def email_verification(request, verification_token):
 
 class UserProfileUpdateView(UpdateView):
     model = User
-    form_class = UserRegisterForm
+    form_class = UserEditForm
     template_name = 'users/profile_edit.html'
     login_url = reverse_lazy("users:login")
     success_url = reverse_lazy('users:profile_detail')
@@ -44,6 +47,12 @@ class UserProfileUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse('users:profile_detail', kwargs={'pk': self.kwargs['pk']})
+
+    def get_form_class(self):
+        if self.request.user.has_perm('users.can_blocking_user'):
+            return UserManagerEditForm
+        else:
+            return UserEditForm
 
 class UserProfileDetailView(LoginRequiredMixin, DetailView):
     model = User

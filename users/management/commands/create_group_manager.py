@@ -9,10 +9,9 @@ class Command(BaseCommand):
 
         view_user_list = Permission.objects.get(codename='can_view_user_list')
         blocking_user = Permission.objects.get(codename='can_blocking_user')
-        view_recipients = Permission.objects.get(codename='can_view_recipient_mail')
         view_mailings = Permission.objects.get(codename='can_view_mailing')
         disabling_mailing = Permission.objects.get(codename='can_disabling_mailing')
 
-        manager_group.permissions.add(view_user_list, blocking_user, view_recipients, view_mailings, disabling_mailing)
+        manager_group.permissions.add(view_user_list, blocking_user,  view_mailings, disabling_mailing)
         manager_group.save()
         self.stdout.write(self.style.SUCCESS('Permissions and groups created successfully'))

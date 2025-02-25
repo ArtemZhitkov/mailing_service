@@ -11,7 +11,7 @@ app_name = UsersConfig.name
 urlpatterns = [
     path('register/', UserCreateView.as_view(), name='register'),
     path('login/', LoginView.as_view(template_name='users/login.html'), name='login'),
-    path('logout/', LogoutView.as_view(next_page='mailapp:mailing_list'), name='logout'),
+    path('logout/', LogoutView.as_view(next_page='users:login'), name='logout'),
     path('reset_password/', PasswordResetView.as_view(template_name='users/registration/password_reset_form.html',
                                                       email_template_name='users/registration/password_reset_email.html',
                                                       success_url=reverse_lazy('users:password_reset_done')),

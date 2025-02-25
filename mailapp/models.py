@@ -17,9 +17,6 @@ class RecipientMail(models.Model):
         verbose_name = 'Получатель письма'
         verbose_name_plural = 'Получатели писем'
         ordering = ['full_name']
-        permissions = [
-            ('can_view_recipient_mail', 'Can view recipient mail'),
-        ]
 
 
 class MailMessage(models.Model):
